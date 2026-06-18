@@ -282,7 +282,8 @@
     Blockly.JavaScript['for_dongusu'] = function(block) {
       var repeats = String(Number(block.getFieldValue('TIMES') || '1'));
       var branch = Blockly.JavaScript.statementToCode(block, 'DO');
-      var loopVar = Blockly.JavaScript.variableDB_.getDistinctName('count', Blockly.Variables.NAME_TYPE);
+      Blockly.JavaScript.loopCounter = (Blockly.JavaScript.loopCounter || 0) + 1;
+      var loopVar = 'count_' + Blockly.JavaScript.loopCounter;
       return 'for (var ' + loopVar + ' = 0; ' + loopVar + ' < ' + repeats + '; ' + loopVar + '++) {\n' +
              '  loopstep();\n' +
              branch +
