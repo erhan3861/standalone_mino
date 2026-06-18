@@ -227,6 +227,7 @@ Her aşamanın description alanı:
   ✦ Karakterin baktığı yönde bir sonraki hücreyi kontrol etmeden matrise engel koyma.
   ✦ Yalnızca görsel olarak "yakın" duran hücreleri bağlantılı varsayma — her adımı matris indeksleriyle doğrula.
   ✦ Virajlarda köşe hücreyi boş bırakarak veya çapraz hizalayarak 1 kare eksik/kopuk yol oluşturma (özellikle Aşama 5 gibi karmaşık yollarda bu hatayı sıkça yapıyorsun, KESİNLİKLE her adımın ardışık komşu hücreye - Manhattan mesafesi = 1 - bastığından emin ol).
+  ✦ JavaScript kodlarında tek satırlık yorumlar (`//`) kullanma. HTML sıkıştırıldığında veya tek satıra yazıldığında kodun bozulmaması için her zaman blok yorumları (`/* ... */`) kullan.
 
 ═══════════════════════════════════════════════════════════════════════════════
 HTML ŞABLONU — TEK DOSYADA 5 AŞAMA (AYNEN BU YAPIYI KULLAN)
@@ -241,6 +242,20 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
   <meta charset="utf-8">
   <title>CodeMino - {{KONU_BASLIGI}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>
+    /* Dinamik Base URL / Path Çözümleyici (<base> tag entegrasyonu) */
+    (function() {
+      /* Varsayılan olarak erhan3861/standalone_mino reposunun GitHub Pages adresinden çek */
+      var baseUrl = window.CODEMINO_BASE_URL || (window.parent && window.parent.CODEMINO_BASE_URL) || 'https://erhan3861.github.io/standalone_mino/';
+      if (baseUrl && !baseUrl.endsWith('/')) {
+        baseUrl += '/';
+      }
+      var base = document.createElement('base');
+      base.href = baseUrl;
+      document.head.appendChild(base);
+      window.CODEMINO_BASE_URL = baseUrl;
+    })();
+  </script>
   <link rel="stylesheet" href="css/codemino_standalone.css">
 </head>
 
@@ -363,11 +378,9 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
   </xml>
 
   <script>
-    // ==========================================
-    // 5 AŞAMALI SEVİYE DİZİSİ
-    // ==========================================
+    /* 5 ASAMALI SEVIYE DIZISI */
     const levels = [
-      // --- AŞAMA 1 ---
+      /* --- ASAMA 1 --- */
       {
         title: "{{TYPE}} - Aşama 1",
         description: "{{ACIKLAMA_1}}",
@@ -382,7 +395,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
         allowedBlocks: [{{BLOKLAR_1}}],
         workspaceBlocks: '{{WORKSPACE_XML_1}}'
       },
-      // --- AŞAMA 2 ---
+      /* --- ASAMA 2 --- */
       {
         title: "{{TYPE}} - Aşama 2",
         description: "{{ACIKLAMA_2}}",
@@ -397,7 +410,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
         allowedBlocks: [{{BLOKLAR_2}}],
         workspaceBlocks: '{{WORKSPACE_XML_2}}'
       },
-      // --- AŞAMA 3 ---
+      /* --- ASAMA 3 --- */
       {
         title: "{{TYPE}} - Aşama 3",
         description: "{{ACIKLAMA_3}}",
@@ -412,7 +425,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
         allowedBlocks: [{{BLOKLAR_3}}],
         workspaceBlocks: '{{WORKSPACE_XML_3}}'
       },
-      // --- AŞAMA 4 ---
+      /* --- ASAMA 4 --- */
       {
         title: "{{TYPE}} - Aşama 4",
         description: "{{ACIKLAMA_4}}",
@@ -427,7 +440,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
         allowedBlocks: [{{BLOKLAR_4}}],
         workspaceBlocks: '{{WORKSPACE_XML_4}}'
       },
-      // --- AŞAMA 5 ---
+      /* --- ASAMA 5 --- */
       {
         title: "{{TYPE}} - Aşama 5",
         description: "{{ACIKLAMA_5}}",
@@ -444,7 +457,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
       }
     ];
 
-    // Multi-level initialization
+    /* Multi-level initialization */
     window.levels = levels;
     window.currentLevelIndex = 0;
     window.levelConfig = levels[0];

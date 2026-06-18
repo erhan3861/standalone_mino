@@ -19,7 +19,23 @@
   }
 
   // 2. Dinamik Base URL Çözümleyici
-  const CODEMINO_BASE_URL = window.CODEMINO_BASE_URL || '';
+  let CODEMINO_BASE_URL = window.CODEMINO_BASE_URL || (window.parent && window.parent.CODEMINO_BASE_URL) || '';
+  if (!CODEMINO_BASE_URL) {
+    if (document.currentScript && document.currentScript.src) {
+      let scriptSrc = document.currentScript.src;
+      let idx = scriptSrc.indexOf('js/');
+      if (idx !== -1) {
+        CODEMINO_BASE_URL = scriptSrc.substring(0, idx);
+      }
+    }
+    if (!CODEMINO_BASE_URL && window.location.pathname.includes('/codeEditor')) {
+      CODEMINO_BASE_URL = '/';
+    }
+  }
+  if (CODEMINO_BASE_URL && !CODEMINO_BASE_URL.endsWith('/')) {
+    CODEMINO_BASE_URL += '/';
+  }
+  window.CODEMINO_BASE_URL = CODEMINO_BASE_URL;
   
   function getAssetUrl(path) {
     if (!CODEMINO_BASE_URL) return path;
