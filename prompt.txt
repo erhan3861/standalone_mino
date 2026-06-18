@@ -84,6 +84,57 @@ KRİTİK KURALLAR:
   ✦ Yol dışında kalan iç alanlar 1 (uzay) veya 12/13/14 (duvar süsleri) ile doldurulur.
   ✦ Her aşamada TEK bir 101 ve TEK bir 100 olmalıdır.
 
+⚠️⚠️⚠️ ZORUNLU YOL BAĞLANTI DOĞRULAMASI ⚠️⚠️⚠️
+
+Bu kural EN KRİTİK kuraldır. İhlal edilemez.
+
+Karakter SADECE 4 komşu hücreye hareket edebilir (çapraz hareket YOKTUR):
+  • Yukarı:  world[y-1][x]
+  • Aşağı:   world[y+1][x]
+  • Sol:     world[y][x-1]
+  • Sağ:     world[y][x+1]
+
+Bir hücre YÜRÜNEBİLİR kabul edilir yalnızca şu değerlere sahipse:
+  2, 3, 4, 5, 6, 8, 100, 101
+
+Bir hücre ENGEL kabul edilir şu değerlere sahipse:
+  0, 1, 7 (kırılmamışsa), 12, 13, 14
+
+Başlangıç (101) ile hedef (100) arasında KESINTISIZ bir yürünebilir hücre zinciri olmalıdır.
+Yani, 101'den başlayarak yalnızca yukarı/aşağı/sol/sağ komşulara giderek 100'e ulaşılabilmelidir.
+Bu zincirde TEK BİR KOPUKLUK bile olması oyunu ÇÖZÜLEMEZ yapar.
+
+Matrisi oluşturduktan sonra, çözüm yolunu ADIM ADIM İZLE ve doğrula:
+
+  ADIM 1: Karakterin başlangıç hücresini bul → world[playerY][playerX] = 101 olmalı
+  ADIM 2: startDirection'a göre ilk hareket yönünü belirle
+  ADIM 3: Çözüm dizisindeki her komut için:
+    • "ilerle" → Mevcut yönde bir sonraki hücreyi kontrol et:
+      - Yön "right" ise → world[y][x+1] yürünebilir mi?
+      - Yön "left" ise  → world[y][x-1] yürünebilir mi?
+      - Yön "down" ise  → world[y+1][x] yürünebilir mi?
+      - Yön "up" ise    → world[y-1][x] yürünebilir mi?
+      Eğer hedef hücre engel (0, 1, 7, 12, 13, 14) ise → HATA! Matrisi düzelt.
+    • "sağa dön" → Yönü saat yönünde çevir (up→right→down→left→up)
+    • "sola dön" → Yönü saat tersi çevir (up→left→down→right→up)
+    • "topla" → Mevcut hücre kristal (3/4/5) olmalı, değilse → HATA!
+    • "parçala" → Baktığı yöndeki hücre kaya (7) olmalı, değilse → HATA!
+  ADIM 4: Son pozisyonun hedef (100) hücresi olduğunu doğrula
+
+ÖRNEK DOĞRULAMA:
+  Matris parçası:
+    row 2: [..., 101, 2, 2, ...]
+    row 3: [...,  12, 2, 1, ...]
+  Başlangıç: (3,2), yön: right
+  Komut: ilerle → (4,2)=2 ✓, ilerle → (5,2)=2 ✓, sağa dön → yön:down, ilerle → (5,3)=2 ✓
+  
+  YANLIŞ ÖRNEK:
+    row 2: [..., 101, 2, 2, 1, ...]
+    row 3: [...,  12, 12, 2, ...]
+  Başlangıç: (3,2), yön: right
+  Komut: ilerle → (4,2)=2 ✓, ilerle → (5,2)=2 ✓, sağa dön → yön:down, ilerle → (5,3)=12 ✗ ENGEL!
+  → Bu matris ÇÖZÜLEMEZ. (5,3) hücresi 12 (duvar) olduğu için karakter ilerleyemez.
+
 ═══════════════════════════════════════════════════
 KOORDİNAT SİSTEMİ VE HAREKET MEKANİĞİ
 ═══════════════════════════════════════════════════
@@ -162,6 +213,12 @@ Her aşamanın description alanı:
   ✦ Yol üzerinde geçilemez bir hücre bırakılmamalıdır (0, 1, 12, 13, 14, kırılmamış 7).
   ✦ for_dongusu bloğu allowedBlocks'a eklenmediyse toolbox'ta görünmez.
   ✦ title alanı "{type} - Aşama N" formatında olmalıdır. Örn: "Döngüler - Aşama 3"
+
+  ⛔ ASLA YAPMA:
+  ✦ Başlangıç (101) ile hedef (100) arasında yürünemez hücre (duvar/uzay) ile kesilen kopuk yol bırakma.
+  ✦ Çözüm yolundaki bir adımın hedef hücresini engel (0, 1, 7, 12, 13, 14) olarak ayarlama.
+  ✦ Karakterin baktığı yönde bir sonraki hücreyi kontrol etmeden matrise engel koyma.
+  ✦ Yalnızca görsel olarak "yakın" duran hücreleri bağlantılı varsayma — her adımı matris indeksleriyle doğrula.
 
 ═══════════════════════════════════════════════════════════════════════════════
 HTML ŞABLONU — TEK DOSYADA 5 AŞAMA (AYNEN BU YAPIYI KULLAN)
@@ -399,17 +456,44 @@ Her aşama için üretimden önce şu kontrolleri yap:
   □ Matris tam 10×10 mü?
   □ Matristeki 101 konumu playerPosition ile eşleşiyor mu?
   □ Matristeki 100 konumu destinationPosition ile eşleşiyor mu?
-  □ Başlangıçtan hedefe yürünebilir bir yol var mı? (0, 1, 12, 13, 14 engel)
-  □ Yol üzerinde kırılmamış kaya (7) varsa allowedBlocks'ta smash_stone var mı?
-  □ Yol üzerinde kristal (3/4/5) varsa allowedBlocks'ta collect_jewel var mı?
-  □ jewelnumber matristeki toplam kristal sayısıyla uyumlu mu?
-  □ targetedBlockNumber minimum çözüm adım sayısıyla uyumlu mu?
   □ Dış sınır satır/sütunları (0. ve 9. satır/sütun) 0 ile dolu mu?
   □ allowedBlocks listesinde yalnızca bu konuya ait bloklar var mı?
   □ workspaceBlocks XML geçerli mi? Tırnak işaretleri düzgün kapatılmış mı?
   □ description Türkçe, teşvik edici ve ipuçlu mu?
-  □ Karakter verilen adım sayısı ({step}) ile hedefe ulaşabiliyor mu?
   □ 5 aşama arası progresif zorluk artışı sağlanmış mı?
+
+  ⚠️ ZORUNLU: ADIM ADIM YOL İZLEME DOĞRULAMASI ⚠️
+  Her aşamayı ürettikten sonra aşağıdaki prosedürü uygula ve çözümü yaz:
+
+  1. Başlangıç pozisyonunu yaz:  pos=(playerX, playerY), yön=startDirection
+  2. Çözüm komut dizisini yaz:   örn: ilerle, ilerle, sağa_dön, ilerle, ...
+  3. Her komut için mevcut durumu güncelle ve MATRIS HÜCRE DEĞERİNİ KONTROL ET:
+
+     Komut        │ pos güncelleme               │ Kontrol
+     ─────────────┼──────────────────────────────┼──────────────────────────
+     ilerle       │ yöne göre x veya y değiştir  │ world[yeniY][yeniX] ∈ {2,3,4,5,6,8,100,101}?
+     sağa_dön     │ pos değişmez                 │ yön güncelle (saat yönü)
+     sola_dön     │ pos değişmez                 │ yön güncelle (saat tersi)
+     topla        │ pos değişmez                 │ world[y][x] ∈ {3,4,5}?
+     parçala      │ pos değişmez                 │ yöndeki hücre = 7?
+
+  4. Son pozisyonun (destX, destY) olduğunu ve hücre değerinin 100 olduğunu doğrula.
+  5. Toplam blok sayısını say (start hariç) → targetedBlockNumber ile karşılaştır.
+  6. Toplam kristal sayısını say → jewelnumber ile karşılaştır.
+
+  DOĞRULAMA ÇIKTISI FORMATI (her aşama için zorunlu):
+  // Aşama N Doğrulama:
+  // Başlangıç: (x,y)=(4,2), yön=right
+  // 1. ilerle  → (5,2) world[2][5]=2 ✓
+  // 2. sağa_dön → yön=down
+  // 3. ilerle  → (5,3) world[3][5]=2 ✓
+  // 4. ilerle  → (5,4) world[4][5]=2 ✓
+  // 5. sola_dön → yön=right
+  // 6. ilerle  → (6,4) world[4][6]=100 ✓ HEDEF!
+  // Toplam: 4 ilerle + 2 dönüş = 6 blok = targetedBlockNumber ✓
+  // Kristal: 0 = jewelnumber ✓
+
+  Eğer herhangi bir adımda ✗ işareti çıkarsa → MATRİSİ DÜZELT ve doğrulamayı tekrarla.
 
 ═══════════════════════════════════════════════════
 ÇIKTI FORMATI
