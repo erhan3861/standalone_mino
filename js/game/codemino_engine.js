@@ -582,6 +582,8 @@
       this.destArray = [];
       
       this.direction = window.levelConfig.startDirection;
+      this.logicalDirection = window.levelConfig.startDirection;
+      this.turnStep = false;
       this.destTaken = false;
       this.isRunning = false;
       this.waitingDelay = 0;
@@ -622,41 +624,55 @@
     newPos() {
       if (this.destArray.length > 0 && !this.destTaken) {
         let destObj = this.destArray.shift();
-        this.targetVal = destObj.destination;
-        this.direction = destObj.direction;
-        this.setDirections();
-        this.destTaken = true;
-        this.isRunning = true;
+        if (destObj.type === "turn") {
+          this.direction = destObj.direction;
+          this.setDirections();
+          this.isRunning = false;
+          this.destTaken = true;
+          this.waitingDelay = 0;
+          this.turnStep = true;
+        } else {
+          this.targetVal = destObj.destination;
+          this.direction = destObj.direction;
+          this.setDirections();
+          this.destTaken = true;
+          this.isRunning = true;
+          this.turnStep = false;
+        }
       }
 
       if (this.destTaken) {
-        if (this.direction === "right") {
-          if (this.x < this.targetVal) {
-            this.x += 3;
-            this.y -= 2;
-          } else {
-            this.stopStep(1, 0);
-          }
-        } else if (this.direction === "left") {
-          if (this.x > this.targetVal) {
-            this.x -= 3;
-            this.y += 2;
-          } else {
-            this.stopStep(-1, 0);
-          }
-        } else if (this.direction === "up") {
-          if (this.y > this.targetVal) {
-            this.x -= 3;
-            this.y -= 2;
-          } else {
-            this.stopStep(0, -1);
-          }
-        } else if (this.direction === "down") {
-          if (this.y < this.targetVal) {
-            this.x += 3;
-            this.y += 2;
-          } else {
-            this.stopStep(0, 1);
+        if (this.turnStep) {
+          this.stopStep(0, 0);
+        } else {
+          if (this.direction === "right") {
+            if (this.x < this.targetVal) {
+              this.x += 3;
+              this.y -= 2;
+            } else {
+              this.stopStep(1, 0);
+            }
+          } else if (this.direction === "left") {
+            if (this.x > this.targetVal) {
+              this.x -= 3;
+              this.y += 2;
+            } else {
+              this.stopStep(-1, 0);
+            }
+          } else if (this.direction === "up") {
+            if (this.y > this.targetVal) {
+              this.x -= 3;
+              this.y -= 2;
+            } else {
+              this.stopStep(0, -1);
+            }
+          } else if (this.direction === "down") {
+            if (this.y < this.targetVal) {
+              this.x += 3;
+              this.y += 2;
+            } else {
+              this.stopStep(0, 1);
+            }
           }
         }
       }
@@ -782,30 +798,30 @@
   // SEVİYE HAREKET API'LERİ
   // =========================================================================
   window.Walk = function() {
-    if (window.player.direction === "up") {
+    if (window.player.logicalDirection === "up") {
       window.player.destX -= window.gameArea.squareSizeX / 2;
       window.player.destY -= window.gameArea.squareSizeY / 2;
-      window.player.destArray.push({ destination: window.player.destY, direction: "up" });
-    } else if (window.player.direction === "down" || window.player.direction === "") {
+      window.player.destArray.push({ type: "walk", destination: window.player.destY, direction: "up" });
+    } else if (window.player.logicalDirection === "down" || window.player.logicalDirection === "") {
       window.player.destX += window.gameArea.squareSizeX / 2;
       window.player.destY += window.gameArea.squareSizeY / 2;
-      window.player.destArray.push({ destination: window.player.destY, direction: "down" });
-    } else if (window.player.direction === "left") {
+      window.player.destArray.push({ type: "walk", destination: window.player.destY, direction: "down" });
+    } else if (window.player.logicalDirection === "left") {
       window.player.destX -= window.gameArea.squareSizeX / 2;
       window.player.destY += window.gameArea.squareSizeY / 2;
-      window.player.destArray.push({ destination: window.player.destX, direction: "left" });
-    } else if (window.player.direction === "right") {
+      window.player.destArray.push({ type: "walk", destination: window.player.destX, direction: "left" });
+    } else if (window.player.logicalDirection === "right") {
       window.player.destX += window.gameArea.squareSizeX / 2;
       window.player.destY -= window.gameArea.squareSizeY / 2;
-      window.player.destArray.push({ destination: window.player.destX, direction: "right" });
+      window.player.destArray.push({ type: "walk", destination: window.player.destX, direction: "right" });
     }
   };
 
   window.TurnToRight = function() {
     const dirs = ["up", "right", "down", "left"];
-    let idx = dirs.indexOf(window.player.direction);
-    window.player.direction = dirs[(idx + 1) % 4];
-    window.player.setDirections();
+    let idx = dirs.indexOf(window.player.logicalDirection);
+    window.player.logicalDirection = dirs[(idx + 1) % 4];
+    window.player.destArray.push({ type: "turn", direction: window.player.logicalDirection });
     
     if (window.hasMoreCode && window.isCodeRunning) {
       setTimeout(() => { window.StateControl(); window.StepCode(); }, 500);
@@ -814,9 +830,9 @@
 
   window.TurnToLeft = function() {
     const dirs = ["up", "left", "down", "right"];
-    let idx = dirs.indexOf(window.player.direction);
-    window.player.direction = dirs[(idx + 1) % 4];
-    window.player.setDirections();
+    let idx = dirs.indexOf(window.player.logicalDirection);
+    window.player.logicalDirection = dirs[(idx + 1) % 4];
+    window.player.destArray.push({ type: "turn", direction: window.player.logicalDirection });
 
     if (window.hasMoreCode && window.isCodeRunning) {
       setTimeout(() => { window.StateControl(); window.StepCode(); }, 500);
@@ -828,17 +844,17 @@
     let targetX = window.player.matrisX;
     let targetY = window.player.matrisY;
 
-    if (window.player.direction === "up") targetY--;
-    else if (window.player.direction === "down" || window.player.direction === "") targetY++;
-    else if (window.player.direction === "left") targetX--;
-    else if (window.player.direction === "right") targetX++;
+    if (window.player.logicalDirection === "up") targetY--;
+    else if (window.player.logicalDirection === "down" || window.player.logicalDirection === "") targetY++;
+    else if (window.player.logicalDirection === "left") targetX--;
+    else if (window.player.logicalDirection === "right") targetX++;
 
     if (window.worldGrid[targetY] && window.worldGrid[targetY][targetX] === 7) {
       window.worldGrid[targetY][targetX] = 8;
       
-      let hitFrames = window.player.direction === "left" ? ["33", "34", "35", "36"] :
-                      window.player.direction === "right" ? ["37", "37", "37", "37"] :
-                      window.player.direction === "up" ? ["38", "38", "38", "38"] : ["29", "30", "31", "32"];
+      let hitFrames = window.player.logicalDirection === "left" ? ["33", "34", "35", "36"] :
+                      window.player.logicalDirection === "right" ? ["37", "37", "37", "37"] :
+                      window.player.logicalDirection === "up" ? ["38", "38", "38", "38"] : ["29", "30", "31", "32"];
       window.player.normalImages = hitFrames;
       window.player.normalIndex = 0;
     } else {
