@@ -949,10 +949,20 @@
   // =========================================================================
   // INITIALIZATION RUNNER
   // =========================================================================
-  window.initGame = function() {
+  function updateLevelUI() {
     document.getElementById("lblLevelTitle").innerText = window.levelConfig.title;
     document.getElementById("messageInfoBody").innerHTML = window.levelConfig.description;
     document.getElementById("lblTargetBlocks").innerText = window.levelConfig.targetedBlockNumber;
+
+    // Update level progress indicator if present
+    const lblProgress = document.getElementById("lblLevelProgress");
+    if (lblProgress && window.levels && Array.isArray(window.levels)) {
+      lblProgress.innerText = (window.currentLevelIndex + 1) + "/" + window.levels.length;
+    }
+  }
+
+  window.initGame = function() {
+    updateLevelUI();
 
     initAudio();
     defineBlocklyBlocks();
@@ -979,6 +989,51 @@
       updateSpeedUI();
       window.startGame();
     });
+  };
+
+  // =========================================================================
+  // MULTI-LEVEL NAVIGATION (ÇOK SEVİYELİ GEÇİŞ)
+  // =========================================================================
+  window.goToNextLevel = function() {
+    closeModal('modalSuccess');
+
+    // Multi-level support: advance to next level in the levels array
+    if (window.levels && Array.isArray(window.levels)) {
+      if (window.currentLevelIndex < window.levels.length - 1) {
+        window.currentLevelIndex++;
+        window.levelConfig = window.levels[window.currentLevelIndex];
+
+        // Stop current game
+        window.gameArea.stop();
+
+        // Update UI labels
+        updateLevelUI();
+
+        // Rebuild Blockly workspace with new toolbox and initial blocks
+        if (window.workspace) {
+          window.workspace.dispose();
+        }
+        initBlockly();
+
+        // Reset run button state
+        window.isRunCode = true;
+        const btn = document.getElementById("btRunCode");
+        if (btn) btn.classList.remove("reset-state");
+        document.getElementById("iconRun").style.display = "block";
+        document.getElementById("iconReset").style.display = "none";
+
+        // Start the new level
+        window.startGame();
+      } else {
+        // All levels completed
+        const completionModal = document.getElementById("modalCompletion");
+        if (completionModal) {
+          showModal("modalCompletion");
+        } else {
+          alert("\uD83C\uDF89 Tebrikler! T\u00fcm seviyeleri ba\u015Far\u0131yla tamamlad\u0131n!");
+        }
+      }
+    }
   };
 
   // Resize handler

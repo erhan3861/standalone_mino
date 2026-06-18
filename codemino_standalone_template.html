@@ -26,6 +26,10 @@
     <div class="level-title" id="lblLevelTitle">Seviye Yükleniyor...</div>
     <div class="stats-area">
       <div class="stat-badge">
+        <span>Aşama:</span>
+        <span id="lblLevelProgress">1/5</span>
+      </div>
+      <div class="stat-badge">
         <span>Hedef Blok:</span>
         <span id="lblTargetBlocks">0</span>
       </div>
@@ -105,6 +109,17 @@
     </div>
   </div>
 
+  <!-- All Levels Completed Modal -->
+  <div class="modal-overlay" id="modalCompletion">
+    <div class="modal-card">
+      <h2 class="modal-title success">🎉 Tüm Seviyeleri Tamamladın!</h2>
+      <p class="modal-msg">Harika bir performans gösterdin! Tüm aşamaları başarıyla geçtin. Kodlama süper gücün artıyor! 🚀</p>
+      <div class="modal-actions">
+        <button class="modal-btn primary" onclick="location.reload();">Baştan Oyna</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toolbox XML definition -->
   <xml xmlns="https://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
     <block type="start"></block>
@@ -117,37 +132,138 @@
 
   <script>
     // ==========================================
-    // SEVİYE YAPILANDIRMASI (LEVEL CONFIGURATION)
+    // SEVİYE DİZİSİ (5 AŞAMALI LEVEL ARRAY)
     // ==========================================
-    const levelConfig = {
-      title: "Uzay Hareketler - Bölüm 1",
-      description: "Bu gezegende keşfedilecek çok şey var. Hedefe🎯 ulaşmamda yardımın gerekiyor. <br>💡Çözüm için İlerle➡️ komutunu kullanmalısın. Kodların çalışması için Çalıştır▶️ butonuna tıkla.",
-      world: [
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-        [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
-        [0,  1,  1,  1,  1,  1, 101,  1,  1,  0],
-        [0, 14,  1,  1, 12, 12, 100, 12, 12,  0],
-        [0, 14, 14,  1,  1, 12,   1, 12,  1,  0],
-        [0, 14, 14,  1,  1,  1,   1,  1, 14,  0],
-        [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
-        [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
-        [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
-      ],
-      playerPosition: { x: 6, y: 2 },
-      destinationPosition: { x: 6, y: 3 },
-      startDirection: "down",
-      jewelnumber: 0, 
-      targetedBlockNumber: 2, 
-      allowedBlocks: ["start", "walk", "turn_right", "turn_left"], 
-      workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml" id="workspaceBlocks" style="display: none"><block type="start" x="150" y="50"></block></xml>'
-    };
+    const levels = [
+      // --- AŞAMA 1 ---
+      {
+        title: "Hareketler - Aşama 1",
+        description: "Bu gezegende keşfedilecek çok şey var. Hedefe🎯 ulaşmamda yardımın gerekiyor. <br>💡Çözüm için İlerle➡️ komutunu kullanmalısın. Kodların çalışması için Çalıştır▶️ butonuna tıkla.",
+        world: [
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  1,  1,  1,  1,  1, 101,  1,  1,  0],
+          [0, 14,  1,  1, 12, 12, 100, 12, 12,  0],
+          [0, 14, 14,  1,  1, 12,   1, 12,  1,  0],
+          [0, 14, 14,  1,  1,  1,   1,  1, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        playerPosition: { x: 6, y: 2 },
+        destinationPosition: { x: 6, y: 3 },
+        startDirection: "down",
+        jewelnumber: 0,
+        targetedBlockNumber: 2,
+        allowedBlocks: ["start", "walk", "turn_right", "turn_left"],
+        workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" x="150" y="50"></block></xml>'
+      },
+      // --- AŞAMA 2 ---
+      {
+        title: "Hareketler - Aşama 2",
+        description: "Mino daha uzun bir yolculuğa çıkıyor! 🚀 Hedefe ulaşmak için birden fazla adım atman gerekiyor. <br>💡İlerle➡️ komutunu birkaç kez kullan.",
+        world: [
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  1,  1,  1, 101,  2,  2, 100,  1,  0],
+          [0, 14,  1,  1, 12, 12, 12, 12, 12,  0],
+          [0, 14, 14,  1,  1,  1,   1,  1,  1,  0],
+          [0, 14, 14,  1,  1,  1,   1,  1, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        playerPosition: { x: 4, y: 2 },
+        destinationPosition: { x: 7, y: 2 },
+        startDirection: "right",
+        jewelnumber: 0,
+        targetedBlockNumber: 3,
+        allowedBlocks: ["start", "walk", "turn_right", "turn_left"],
+        workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" x="150" y="50"></block></xml>'
+      },
+      // --- AŞAMA 3 ---
+      {
+        title: "Hareketler - Aşama 3",
+        description: "Bu sefer yolda bir viraj var! 🔄 Mino'yu önce ilerlet, sonra döndür ve tekrar ilerlet. <br>💡Sağa Dön↪️ komutunu da kullanman gerekecek.",
+        world: [
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  1,  1,  1,  1, 101,  1,  1,  1,  0],
+          [0, 14,  1,  1, 12,   2, 12,  1, 12,  0],
+          [0, 14, 14,  1,  1,   2,  1,  1,  1,  0],
+          [0, 14, 14,  1,  1, 100,  1,  1, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        playerPosition: { x: 5, y: 2 },
+        destinationPosition: { x: 5, y: 5 },
+        startDirection: "down",
+        jewelnumber: 0,
+        targetedBlockNumber: 4,
+        allowedBlocks: ["start", "walk", "turn_right", "turn_left"],
+        workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" x="150" y="50"></block></xml>'
+      },
+      // --- AŞAMA 4 ---
+      {
+        title: "Hareketler - Aşama 4",
+        description: "Yol giderek karmaşıklaşıyor! 🌀 Birden fazla dönüş yapman lazım. <br>💡Sağa Dön↪️ ve Sola Dön↩️ komutlarını dikkatli kullan.",
+        world: [
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  1,  1, 101, 2,   2,  1,  1,  1,  0],
+          [0, 14,  1, 12, 12, 12,   2, 12, 12,  0],
+          [0, 14, 14,  1,  1,  1,   2,  1,  1,  0],
+          [0, 14, 14,  1,  1,  1, 100,  1, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        playerPosition: { x: 3, y: 2 },
+        destinationPosition: { x: 6, y: 5 },
+        startDirection: "right",
+        jewelnumber: 0,
+        targetedBlockNumber: 6,
+        allowedBlocks: ["start", "walk", "turn_right", "turn_left"],
+        workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" x="150" y="50"></block></xml>'
+      },
+      // --- AŞAMA 5 ---
+      {
+        title: "Hareketler - Aşama 5",
+        description: "Son aşama! 🏆 En zorlu yolculuk seni bekliyor. Tüm yön komutlarını ustaca kullanmalısın. <br>💡Adımlarını önceden planla ve dikkatli ol!",
+        world: [
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  1, 101, 2,   2,  1,  1,  1,  1,  0],
+          [0, 14, 12, 12, 12,   2, 12,  1, 12,  0],
+          [0, 14, 14,  1,  1,   2,  1,  1,  1,  0],
+          [0, 14, 14,  1,  2,   2,  1,  1, 14,  0],
+          [0, 14, 14,  1,  2, 100,  1, 14, 14,  0],
+          [0, 14, 14,  1,  1,  1,   1, 14, 14,  0],
+          [0, 13, 13, 13, 13, 13, 13, 13, 13,  0],
+          [0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        playerPosition: { x: 2, y: 2 },
+        destinationPosition: { x: 5, y: 6 },
+        startDirection: "right",
+        jewelnumber: 0,
+        targetedBlockNumber: 8,
+        allowedBlocks: ["start", "walk", "turn_right", "turn_left"],
+        workspaceBlocks: '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" x="150" y="50"></block></xml>'
+      }
+    ];
 
-    // Attach levelConfig to window scope for codemino_engine to read
-    window.levelConfig = levelConfig;
+    // Multi-level initialization
+    window.levels = levels;
+    window.currentLevelIndex = 0;
+    window.levelConfig = levels[0];
   </script>
 
-  <!-- Load the modular game engine (will automatically pull dependencies and start) -->
+  <!-- Load the modular game engine -->
   <script src="js/game/codemino_engine.js"></script>
 </body>
 </html>
