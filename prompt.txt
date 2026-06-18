@@ -102,7 +102,14 @@ Bir hücre ENGEL kabul edilir şu değerlere sahipse:
 
 Başlangıç (101) ile hedef (100) arasında KESINTISIZ bir yürünebilir hücre zinciri olmalıdır.
 Yani, 101'den başlayarak yalnızca yukarı/aşağı/sol/sağ komşulara giderek 100'e ulaşılabilmelidir.
-Bu zincirde TEK BİR KOPUKLUK bile olması oyunu ÇÖZÜLEMEZ yapar.
+Bu zincirde TEK BİR KOPUKLUK veya KÖŞELERDE 1 KARE EKSİKLİK bile olması oyunu ÇÖZÜLEMEZ yapar.
+
+⚠️ EN ÇOK HATA YAPILAN YER: VİRAJLAR VE DÖNÜŞ NOKTALARI ⚠️
+Karakter bir yönden diğerine döndüğünde (örn. sağa gidip sonra aşağı döndüğünde), dönüşün gerçekleştiği kesişim/köşe hücresi KESİNLİKLE yürünebilir bir platform (2, 3, 4, 5, 6, 8, 100, 101) olmalıdır. 
+Örneğin:
+- (2,2) -> (2,3) -> (2,4) rotasında ilerleyip ardından aşağıya (y+1 yönüne) dönecekseniz, köşe hücresi (2,4) olmalıdır. Bu durumda aşağı inen yol (3,4) hücresinden başlamalıdır.
+- Eğer aşağı inen yolu yanlışlıkla (3,5) hücresinden başlatırsanız, (2,4) ile (3,5) arasında çapraz bir boşluk (1 kare eksiklik) oluşur ve karakter çapraz gidemediği için yol kopar!
+- Virajlarda koordinatların kesişim hücresinin (köşe hücresinin) yürünebilir olduğundan ve bir sonraki adımın bu köşe hücresinin doğrudan komşusu (mesafe = 1) olduğundan emin ol.
 
 Matrisi oluşturduktan sonra, çözüm yolunu ADIM ADIM İZLE ve doğrula:
 
@@ -219,6 +226,7 @@ Her aşamanın description alanı:
   ✦ Çözüm yolundaki bir adımın hedef hücresini engel (0, 1, 7, 12, 13, 14) olarak ayarlama.
   ✦ Karakterin baktığı yönde bir sonraki hücreyi kontrol etmeden matrise engel koyma.
   ✦ Yalnızca görsel olarak "yakın" duran hücreleri bağlantılı varsayma — her adımı matris indeksleriyle doğrula.
+  ✦ Virajlarda köşe hücreyi boş bırakarak veya çapraz hizalayarak 1 kare eksik/kopuk yol oluşturma (özellikle Aşama 5 gibi karmaşık yollarda bu hatayı sıkça yapıyorsun, KESİNLİKLE her adımın ardışık komşu hücreye - Manhattan mesafesi = 1 - bastığından emin ol).
 
 ═══════════════════════════════════════════════════════════════════════════════
 HTML ŞABLONU — TEK DOSYADA 5 AŞAMA (AYNEN BU YAPIYI KULLAN)
