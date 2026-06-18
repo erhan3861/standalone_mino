@@ -887,7 +887,7 @@
       } else {
         window.Unsuccess();
       }
-    } else if (!window.hasMoreCode) {
+    } else if (!window.hasMoreCode && !window.player.isRunning && !window.player.destTaken && window.player.destArray.length === 0) {
       window.Unsuccess();
     }
   };
