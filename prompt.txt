@@ -7,9 +7,36 @@ DİNAMİK GİRDİLER
 ═══════════════════════════════════════════════════
 
 Kullanıcıdan gelen parametreler:
-  • adim_sayisi = {step}       → Oyuncunun hedefe ulaşması için gereken ortalama adım sayısı
-  • konu        = {type}       → Seviye konusu (aşağıdaki listeden biri)
-  • seviye      = {difficulty} → Zorluk seviyesi: kolay | orta | zor
+  • konu_secimi   = {type}       → Kullanıcının girdiği konu numarası veya konu adı
+  • seviye_secimi = {difficulty} → Kullanıcının girdiği zorluk numarası veya zorluk adı
+
+ÖNCE SEÇİMLERİ NORMALİZE ET:
+
+Konu seçimi:
+  1 → hareket       → Başlık: Hareket
+  2 → döngü         → Başlık: Döngüler
+  3 → toplama       → Başlık: Toplama
+  4 → engel         → Başlık: Engeller
+  5 → karma         → Başlık: Karma
+  6 → hata_ayiklama → Başlık: Hata Ayıklama
+  7 → optimizasyon  → Başlık: Optimizasyon
+
+Zorluk seçimi:
+  1 → kolay
+  2 → orta
+  3 → zor
+
+NORMALİZASYON KURALLARI:
+  • Kullanıcı {type} olarak sayı girdiyse yukarıdaki konu tablosuna göre konu_anahtari ve konu_basligi belirle.
+  • Kullanıcı {type} olarak doğrudan konu adı girdiyse eşleşen konu_anahtari ve konu_basligi belirle.
+  • Kullanıcı {difficulty} olarak sayı girdiyse yukarıdaki zorluk tablosuna göre seviye_anahtari belirle.
+  • Kullanıcı {difficulty} olarak doğrudan kolay/orta/zor girdiyse seviye_anahtari olarak onu kullan.
+  • Çıktıdaki title, description, allowedBlocks, dosya adı ve tüm seviye tasarımı normalize edilmiş konu_anahtari + seviye_anahtari değerlerine göre üretilmelidir.
+
+ÖNEMLİ TASARIM MANTIĞI:
+  • Kullanıcı deneyiminde ana seçimler "konu numarası" ve "zorluk numarası" olmalıdır.
+  • Gerçek çözüm uzunluğunu, hedef blok sayısını ve rota karmaşıklığını aşağıdaki zorluk tablosundan TÜRET.
+  • Konu, öğretilecek kavramı belirler. Zorluk, aynı kavramın kaç blokla ve ne kadar karmaşık haritayla anlatılacağını belirler.
 
 ═══════════════════════════════════════════════════
 KONU TİPLERİ VE KULLANILACAK BLOKLAR
@@ -17,43 +44,65 @@ KONU TİPLERİ VE KULLANILACAK BLOKLAR
 
 Her konu için izin verilen blok türleri (allowedBlocks):
 
-┌──────────────┬───────────────────────────────────────────────────────────┐
-│ Konu (type)  │ Kullanılacak Bloklar                                    │
-├──────────────┼───────────────────────────────────────────────────────────┤
-│ hareket      │ start, walk, turn_right, turn_left                      │
-│ döngü        │ start, walk, turn_right, turn_left, for_dongusu         │
-│ toplama      │ start, walk, turn_right, turn_left, collect_jewel       │
-│ engel        │ start, walk, turn_right, turn_left, smash_stone         │
-│ karma        │ start, walk, turn_right, turn_left, collect_jewel,      │
-│              │ smash_stone, for_dongusu                                │
-│ hata_ayiklama│ Tüm bloklar (start, walk, turn_right, turn_left,       │
-│              │ collect_jewel, smash_stone, for_dongusu)                │
-└──────────────┴───────────────────────────────────────────────────────────┘
+┌──────────────┬───────────────────────────────────────────────────────────┬──────────────────────────────┐
+│ Konu (type)  │ Kullanılacak Bloklar                                      │ Öğretim odağı                 │
+├──────────────┼───────────────────────────────────────────────────────────┼──────────────────────────────┤
+│ hareket      │ start, walk, turn_right, turn_left                        │ İlerleme ve temel dönüşler    │
+│ yonler       │ start, walk, turn_right, turn_left                        │ Dönüş odaklı yön takibi       │
+│ döngü        │ start, walk, turn_right, turn_left, for_dongusu           │ Tekrar eden hareket kalıpları │
+│ toplama      │ start, walk, turn_right, turn_left, collect_jewel         │ Kristal üstünde topla komutu  │
+│ engel        │ start, walk, turn_right, turn_left, smash_stone           │ Kayayı kırıp yola devam etme  │
+│ karma        │ start, walk, turn_right, turn_left, collect_jewel,        │ Birden fazla kavramı birleştir│
+│              │ smash_stone, for_dongusu                                  │                              │
+│ hata_ayiklama│ start, walk, turn_right, turn_left, collect_jewel,        │ Hatalı hazır kodu düzeltme    │
+│              │ smash_stone, for_dongusu                                  │                              │
+│ optimizasyon │ start, walk, turn_right, turn_left, collect_jewel,        │ Daha az blokla çözüm kurma    │
+│              │ smash_stone, for_dongusu                                  │                              │
+└──────────────┴───────────────────────────────────────────────────────────┴──────────────────────────────┘
 
-"hata_ayiklama" konusunda: Workspace'e önceden yerleştirilmiş HATALI bir kod bloğu zinciri koy. Öğrencinin görevi hatayı bulup düzeltmektir. workspaceBlocks alanına hatalı blok dizisini XML olarak yaz.
+KONU KURALLARI:
+  • Zorluk seviyesi, seçilen konunun ana bloğunu ASLA devre dışı bırakmaz.
+    Örnek: konu "döngü" ise kolay seviyede bile for_dongusu kullanılabilir; sadece rota ve tekrar sayısı basit tutulur.
+  • "hareket" konusu temel ilerleme ve basit dönüşleri öğretir; kristal, kaya veya döngü içermez.
+  • "yonler" konusu hareketin alt konusudur; özellikle sağa/sola dönüş ve yön takibi çalıştırmak için kullanılır.
+  • "toplama" konusunda en az 1 kristal bulunmalı ve collect_jewel gerekli olmalıdır.
+  • "engel" konusunda en az 1 kaya bulunmalı ve smash_stone gerekli olmalıdır.
+  • "karma" konusunda kristal, kaya veya döngüden en az iki farklı kavram birlikte kullanılmalıdır.
+  • "hata_ayiklama" konusunda workspaceBlocks içine önceden yerleştirilmiş HATALI bir kod zinciri koy. Öğrencinin görevi hatayı bulup düzeltmektir. Description alanında hatanın türüne dair ipucu ver, fakat tam çözümü söyleme.
+  • "optimizasyon" konusunda çalışan ama gereğinden uzun bir hazır çözüm veya ipucu verilebilir; hedef, for_dongusu ile daha az blok kullanmayı keşfetmektir.
+  • "koşullar/kosullar" konusu ŞİMDİLİK ÜRETİLMEZ. Oyun motorunda koşul/sensör blokları olmadığı için if, while, if_front_blocked, if_on_jewel gibi bloklar kullanma.
 
 ═══════════════════════════════════════════════════
 ZORLUK SEVİYESİ ÖLÇEKLENDİRMESİ
 ═══════════════════════════════════════════════════
 
-┌───────────┬──────────────────┬──────────────┬────────────┬─────────────────┐
-│ Zorluk    │ Yol Karmaşıklığı │ Dönüş Sayısı │ Kristal    │ Engel (Kaya)    │
-├───────────┼──────────────────┼──────────────┼────────────┼─────────────────┤
-│ kolay     │ Düz veya 1 dönüş │ 0-1          │ 0          │ 0               │
-│ orta      │ 2-3 dönüş        │ 2-3          │ 0-2        │ 0-1             │
-│ zor       │ Labirent tipi    │ 3+           │ 2-4        │ 1-3             │
-└───────────┴──────────────────┴──────────────┴────────────┴─────────────────┘
+┌───────────┬──────────────────┬────────────────┬──────────────┬────────────┬─────────────────┬─────────────────────┐
+│ Zorluk    │ Hedef blok aralığı│ Yol uzunluğu   │ Dönüş Sayısı │ Kristal    │ Engel (Kaya)    │ Döngü kullanımı      │
+├───────────┼──────────────────┼────────────────┼──────────────┼────────────┼─────────────────┼─────────────────────┤
+│ kolay     │ 3-6 blok          │ kısa           │ 0-1          │ konuysa 1   │ konuysa 1        │ konuysa basit 2-3 tur│
+│ orta      │ 7-12 blok         │ orta           │ 2-3          │ konuysa 1-2 │ konuysa 1-2      │ tekrar varsa kullan  │
+│ zor       │ 13-25 blok        │ uzun/karmaşık  │ 3+           │ konuysa 2-4 │ konuysa 1-3      │ optimize etmek için  │
+└───────────┴──────────────────┴────────────────┴──────────────┴────────────┴─────────────────┴─────────────────────┘
 
-• "kolay" seviyede döngü (for_dongusu) kullanılmaz, sadece temel hareket blokları.
-• "orta" seviyede tekrarlayan kalıplar varsa for_dongusu kullanılabilir.
-• "zor" seviyede mutlaka for_dongusu ile optimize edilebilir karmaşık yollar tasarla.
+ZORLUK KURALLARI:
+  • Hedef blok aralığı "start" bloğu HARİÇ targetedBlockNumber için beklenen aralıktır.
+  • Zorluk, konunun izin verdiği bloklar içinde uygulanır. Konuya ait olmayan bloğu sadece zorluk yükseldi diye ekleme.
+  • Kolay seviyede tek kavram, kısa rota ve az karar noktası kullan.
+  • Orta seviyede aynı kavramı biraz uzat; 2-3 dönüş, 1-2 görev noktası veya basit tekrar kalıbı yeterlidir.
+  • Zor seviyede uzun rota, birden fazla dönüş ve optimizasyon fırsatı tasarla; fakat yol yine kesin çözülebilir ve çocuk için okunabilir olmalıdır.
+  • Eğer konu "döngü", "karma", "hata_ayiklama" veya "optimizasyon" ise for_dongusu zorluğa göre kullanılabilir. Diğer konularda for_dongusu ekleme.
+  • Eğer konu "toplama", "karma" veya "hata_ayiklama" değilse kristal koyma; jewelnumber = 0 olmalıdır.
+  • Eğer konu "engel", "karma" veya "hata_ayiklama" değilse kaya koyma.
 
 5 Aşama Arasında Progresyon:
-  Aşama 1 → En basit versiyon (adım sayısının alt sınırında)
-  Aşama 2 → Hafif zorluk artışı
-  Aşama 3 → Orta zorluk
-  Aşama 4 → İleri zorluk
-  Aşama 5 → En zor versiyon (en karmaşık yol, en fazla engel/kristal)
+  Aşama 1 → Seçilen zorluğun en basit örneği
+  Aşama 2 → Aynı kavrama küçük bir dönüş veya ek adım ekle
+  Aşama 3 → Seçilen zorluğun orta noktası
+  Aşama 4 → Daha uzun rota veya daha belirgin tekrar kalıbı
+  Aşama 5 → Seçilen zorluğun üst sınırı; en fazla blok/engel/kristal burada olmalı
+
+Progresyon hiçbir zaman seçilen zorluk bandını aşmamalıdır.
+Örnek: "kolay + döngü" üretirken Aşama 5 bile kolay kalmalı; sadece basit bir 2-3 tekrarlı yol kullanmalıdır.
 
 ═══════════════════════════════════════════════════
 MATRİS YAPISI VE OYUN KURALLARI
@@ -223,7 +272,8 @@ Her aşamanın description alanı:
   ✦ Başlangıç (101) ve hedef (100) konumları playerPosition ve destinationPosition ile birebir eşleşmelidir.
   ✦ Yol üzerinde geçilemez bir hücre bırakılmamalıdır (0, 1, 12, 13, 14, kırılmamış 7).
   ✦ for_dongusu bloğu allowedBlocks'a eklenmediyse toolbox'ta görünmez.
-  ✦ title alanı "{type} - Aşama N" formatında olmalıdır. Örn: "Döngüler - Aşama 3"
+  ✦ title alanı "{{KONU_BASLIGI}} - Aşama N" formatında olmalıdır. Örn: "Döngüler - Aşama 3"
+  ✦ {{KONU_BASLIGI}}, normalize edilmiş konu_basligi değeridir; kullanıcının girdiği sayı doğrudan başlığa yazılmaz.
 
   ⛔ ASLA YAPMA:
   ✦ Başlangıç (101) ile hedef (100) arasında yürünemez hücre (duvar/uzay) ile kesilen kopuk yol bırakma.
@@ -387,7 +437,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
     const levels = [
       /* --- ASAMA 1 --- */
       {
-        title: "{{TYPE}} - Aşama 1",
+        title: "{{KONU_BASLIGI}} - Aşama 1",
         description: "{{ACIKLAMA_1}}",
         world: [
           {{MATRIS_1}}
@@ -402,7 +452,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
       },
       /* --- ASAMA 2 --- */
       {
-        title: "{{TYPE}} - Aşama 2",
+        title: "{{KONU_BASLIGI}} - Aşama 2",
         description: "{{ACIKLAMA_2}}",
         world: [
           {{MATRIS_2}}
@@ -417,7 +467,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
       },
       /* --- ASAMA 3 --- */
       {
-        title: "{{TYPE}} - Aşama 3",
+        title: "{{KONU_BASLIGI}} - Aşama 3",
         description: "{{ACIKLAMA_3}}",
         world: [
           {{MATRIS_3}}
@@ -432,7 +482,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
       },
       /* --- ASAMA 4 --- */
       {
-        title: "{{TYPE}} - Aşama 4",
+        title: "{{KONU_BASLIGI}} - Aşama 4",
         description: "{{ACIKLAMA_4}}",
         world: [
           {{MATRIS_4}}
@@ -447,7 +497,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
       },
       /* --- ASAMA 5 --- */
       {
-        title: "{{TYPE}} - Aşama 5",
+        title: "{{KONU_BASLIGI}} - Aşama 5",
         description: "{{ACIKLAMA_5}}",
         world: [
           {{MATRIS_5}}
@@ -527,7 +577,7 @@ Her aşama için üretimden önce şu kontrolleri yap:
 ÇIKTI FORMATI
 ═══════════════════════════════════════════════════
 
-TEK bir HTML dosyası üret. Dosya adı: {type}_{difficulty}.html
+TEK bir HTML dosyası üret. Dosya adı normalize edilmiş değerlerle şu formatta olmalıdır: {{KONU_ANAHTARI}}_{{SEVIYE_ANAHTARI}}.html
 
 Çıktında sadece tamamlanmış HTML kodunu ver:
 
@@ -537,6 +587,8 @@ TEK bir HTML dosyası üret. Dosya adı: {type}_{difficulty}.html
 
 Şimdi aşağıdaki parametrelerle 5 aşamalı tek HTML dosyası üret:
 
-  adim_sayisi = {step}
-  konu        = {type}
-  seviye      = {difficulty}
+  konu_secimi   = {type}
+  seviye_secimi = {difficulty}
+
+Not:
+  • Nihai targetedBlockNumber değerlerini ve rota uzunluklarını konu + seviye tablosuna göre belirle.
