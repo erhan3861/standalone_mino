@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <title>CodeMino - Hata Ayıklama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        /* Dinamik Base URL / Path Çözümleyici (<base> tag entegrasyonu) */
+        (function () {
+            /* Varsayılan olarak erhan3861/standalone_mino reposunun GitHub Pages adresinden çek */
+            var baseUrl = window.CODEMINO_BASE_URL || (window.parent && window.parent.CODEMINO_BASE_URL) || 'https://erhan3861.github.io/standalone_mino/';
+            if (baseUrl && !baseUrl.endsWith('/')) {
+                baseUrl += '/';
+            }
+            var base = document.createElement('base');
+            base.href = baseUrl;
+            document.head.appendChild(base);
+            window.CODEMINO_BASE_URL = baseUrl;
+        })();
+    </script>
+    <link rel="stylesheet" href="css/codemino_standalone.css">
+</head>
+
+<body>
+    <!-- Loading preloader -->
+    <div class="spinner-wrapper" id="preloader">
+        <div class="spinner">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <img src="images/logo3.png" alt="CodeMino Logo">
+        </div>
+        <div class="level-title" id="lblLevelTitle">Seviye Yükleniyor...</div>
+        <div class="stats-area">
+            <div class="stat-badge">
+                <span>Aşama:</span>
+                <span id="lblLevelProgress">1/5</span>
+            </div>
+            <div class="stat-badge">
+                <span>Hedef Blok:</span>
+                <span id="lblTargetBlocks">0</span>
+            </div>
+            <div class="stat-badge">
+                <span>Blok Sayısı:</span>
+                <span id="lblCurrentBlocks">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="panel" id="leftSide">
+            <div id="blocklyDiv"></div>
+        </div>
+
+        <div class="run-btn-container">
+            <button class="btn-circle" id="btRunCode" onclick="handleRunClick()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    id="iconRun">
+                    <polygon points="5,3 19,12 5,21" fill="currentColor" />
+                </svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    id="iconReset" style="display:none;">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="panel" id="rightSide">
+            <div id="divOuterGameArea">
+                <div id="divGameArea"></div>
+            </div>
+            <div class="info-card">
+                <img class="info-avatar" src="images/monkey.png" alt="Mino">
+                <div class="info-text" id="messageInfoBody">Talimatlar yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="side-controls">
+            <button class="control-btn" id="btnSound" onclick="toggleSound()" title="Sesi Aç/Kapat">
+                <img id="imgSound" src="images/soundon.png" alt="Sound On">
+            </button>
+            <button class="control-btn" id="btnSpeed" onclick="toggleSpeed()" title="Oyun Hızı">
+                <img id="imgSpeed" src="images/speed1.png" alt="Speed 1x">
+            </button>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div class="modal-overlay" id="modalSuccess">
+        <div class="modal-card">
+            <h2 class="modal-title success">Tebrikler!</h2>
+            <div class="modal-stars">
+                <span class="modal-star" id="star1">★</span>
+                <span class="modal-star" id="star2">★</span>
+                <span class="modal-star" id="star3">★</span>
+            </div>
+            <p class="modal-msg" id="modalSuccessMsg">Harika bir iş çıkardın! Mino'yu hedefine ulaştırdın.</p>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('modalSuccess'); restartGame();">Tekrar
+                    Oyna</button>
+                <button class="modal-btn primary" onclick="goToNextLevel()">Sonraki Aşama</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lose Modal -->
+    <div class="modal-overlay" id="modalError">
+        <div class="modal-card">
+            <h2 class="modal-title error">Olmadı!</h2>
+            <p class="modal-msg" id="modalErrorMsg">Mino hedefine ulaşamadı veya engellere çarptı. Kodlarını kontrol
+                edip tekrar dene.</p>
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="closeModal('modalError'); restartGame();">Hadi Tekrar
+                    Dene</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Levels Completed Modal -->
+    <div class="modal-overlay" id="modalCompletion">
+        <div class="modal-card">
+            <h2 class="modal-title success">🎉 Tüm Seviyeleri Tamamladın!</h2>
+            <p class="modal-msg">Harika bir performans gösterdin! Tüm aşamaları başarıyla geçtin. Kodlama süper gücün
+                artıyor! 🚀</p>
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="location.reload();">Baştan Oyna</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbox XML -->
+    <xml xmlns="https://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
+        <block type="start"></block>
+        <block type="walk"></block>
+        <block type="turn_right"></block>
+        <block type="turn_left"></block>
+        <block type="smash_stone"></block>
+        <block type="collect_jewel"></block>
+    </xml>
+
+    <script>
+        /* 5 ASAMALI SEVIYE DIZISI */
+        const levels = [
+            /* --- ASAMA 1 --- */
+            {
+                title: "Hata Ayıklama - Aşama 1",
+                description: "🐵 Mino portala gitmek istiyor ama kodunda küçük bir hata var!<br>Başlangıçtaki bloklar Mino'yu hep düz götürüyor. Virajı fark edip doğru yerde <b>sağa dön</b> bloğunu ekle. 🚀",
+                world: [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 1, 101, 2, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 100, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                playerPosition: { x: 2, y: 2 },
+                destinationPosition: { x: 4, y: 5 },
+                startDirection: "right",
+                jewelnumber: 0,
+                targetedBlockNumber: 6,
+                allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
+                workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"><block type="start" x="20" y="20"><next><block type="walk"><next><block type="walk"><next><block type="walk"></block></next></block></next></block></next></block></xml>'
+            },
+            /* --- ASAMA 2 --- */
+            {
+                title: "Hata Ayıklama - Aşama 2",
+                description: "💎 Bu kez yolda bir kristal var!<br>Kod Mino'yu portala yaklaştırıyor ama kristali toplamayı unutuyor. Kristalin üstüne gelince <b>topla</b> bloğunu doğru yere ekle. ✨",
+                world: [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 1, 101, 2, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 3, 2, 100, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                playerPosition: { x: 2, y: 2 },
+                destinationPosition: { x: 6, y: 4 },
+                startDirection: "right",
+                jewelnumber: 1,
+                targetedBlockNumber: 9,
+                allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
+                workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"><block type="start" x="20" y="20"><next><block type="walk"><next><block type="walk"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"><next><block type="turn_left"><next><block type="walk"><next><block type="walk"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>'
+            },
+            /* --- ASAMA 3 --- */
+            {
+                title: "Hata Ayıklama - Aşama 3",
+                description: "🪨 Mino'nun önünde bir kaya engeli var!<br>Hazır kodda Mino kayaya doğru yürümeye çalışıyor. Kayaya basmadan önce <b>parçala</b> bloğunu doğru yere koy. 💪",
+                world: [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 2, 2, 2, 100, 1, 0],
+                    [0, 1, 1, 1, 7, 1, 1, 1, 1, 0],
+                    [0, 1, 101, 2, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                playerPosition: { x: 2, y: 6 },
+                destinationPosition: { x: 7, y: 4 },
+                startDirection: "right",
+                jewelnumber: 0,
+                targetedBlockNumber: 10,
+                allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
+                workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"><block type="start" x="20" y="20"><next><block type="walk"><next><block type="walk"><next><block type="turn_left"><next><block type="walk"><next><block type="walk"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"><next><block type="walk"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>'
+            },
+            /* --- ASAMA 4 --- */
+            {
+                title: "Hata Ayıklama - Aşama 4",
+                description: "🔍 Şimdi hata biraz daha saklandı!<br>Yolda hem kristaller hem de kaya var. Kodda bir yerde kaya için gerekli işlem eksik. Kristalleri <b>topla</b>, kayayı <b>parçala</b> ve portala ulaş. 🌟",
+                world: [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 1, 101, 2, 3, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 2, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 7, 2, 3, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 2, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 100, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                playerPosition: { x: 2, y: 2 },
+                destinationPosition: { x: 6, y: 6 },
+                startDirection: "right",
+                jewelnumber: 2,
+                targetedBlockNumber: 14,
+                allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
+                workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"><block type="start" x="20" y="20"><next><block type="walk"><next><block type="walk"><next><block type="collect_jewel"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"><next><block type="turn_left"><next><block type="walk"><next><block type="walk"><next><block type="collect_jewel"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>'
+            },
+            /* --- ASAMA 5 --- */
+            {
+                title: "Hata Ayıklama - Aşama 5",
+                description: "🚀 Final hata ayıklama görevi başladı!<br>Mino uzun bir yoldan geçecek, iki kristali toplayacak ve kayayı kıracak. Hazır kodda kritik bir blok eksik: Mino kayaya çarpmadan önce hangi bloğa ihtiyaç duyar? 🧠",
+                world: [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 3, 2, 7, 1, 0],
+                    [0, 1, 1, 1, 1, 2, 1, 2, 1, 0],
+                    [0, 1, 101, 2, 2, 2, 1, 3, 1, 0],
+                    [0, 1, 1, 1, 1, 1, 1, 100, 1, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                playerPosition: { x: 2, y: 6 },
+                destinationPosition: { x: 7, y: 7 },
+                startDirection: "right",
+                jewelnumber: 2,
+                targetedBlockNumber: 16,
+                allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
+                workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"><block type="start" x="20" y="20"><next><block type="walk"><next><block type="walk"><next><block type="walk"><next><block type="turn_left"><next><block type="walk"><next><block type="walk"><next><block type="collect_jewel"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"><next><block type="turn_right"><next><block type="walk"><next><block type="walk"><next><block type="collect_jewel"><next><block type="walk"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>'
+            }
+        ];
+
+        /*
+          Aşama 1 Doğrulama:
+          Başlangıç: (x,y)=(2,2), yön=right
+          1. ilerle → (3,2) world[2][3]=2 ✓
+          2. ilerle → (4,2) world[2][4]=2 ✓
+          3. sağa_dön → yön=down ✓
+          4. ilerle → (4,3) world[3][4]=2 ✓
+          5. ilerle → (4,4) world[4][4]=2 ✓
+          6. ilerle → (4,5) world[5][4]=100 ✓ HEDEF
+          Toplam: 3 yatay/dikey ilerleme + 1 dönüş + 2 ek ilerleme = 6 blok = targetedBlockNumber ✓
+          Kristal: 0 = jewelnumber ✓
+    
+          Aşama 2 Doğrulama:
+          Başlangıç: (x,y)=(2,2), yön=right
+          1. ilerle → (3,2) world[2][3]=2 ✓
+          2. ilerle → (4,2) world[2][4]=2 ✓
+          3. sağa_dön → yön=down ✓
+          4. ilerle → (4,3) world[3][4]=2 ✓
+          5. ilerle → (4,4) world[4][4]=3 ✓
+          6. topla → world[4][4]=3 ✓
+          7. sola_dön → yön=right ✓
+          8. ilerle → (5,4) world[4][5]=2 ✓
+          9. ilerle → (6,4) world[4][6]=100 ✓ HEDEF
+          Toplam: 6 ilerle + 2 dönüş + 1 topla = 9 blok = targetedBlockNumber ✓
+          Kristal: 1 = jewelnumber ✓
+    
+          Aşama 3 Doğrulama:
+          Başlangıç: (x,y)=(2,6), yön=right
+          1. ilerle → (3,6) world[6][3]=2 ✓
+          2. ilerle → (4,6) world[6][4]=2 ✓
+          3. sola_dön → yön=up ✓
+          4. parçala → bakılan hücre (4,5) world[5][4]=7 ✓
+          5. ilerle → (4,5) kırılmış kaya 8 olarak izlenir ✓
+          6. ilerle → (4,4) world[4][4]=2 ✓
+          7. sağa_dön → yön=right ✓
+          8. ilerle → (5,4) world[4][5]=2 ✓
+          9. ilerle → (6,4) world[4][6]=2 ✓
+          10. ilerle → (7,4) world[4][7]=100 ✓ HEDEF
+          Toplam: 7 ilerle + 2 dönüş + 1 parçala = 10 blok = targetedBlockNumber ✓
+          Kristal: 0 = jewelnumber ✓
+    
+          Aşama 4 Doğrulama:
+          Başlangıç: (x,y)=(2,2), yön=right
+          1. ilerle → (3,2) world[2][3]=2 ✓
+          2. ilerle → (4,2) world[2][4]=3 ✓
+          3. topla → world[2][4]=3 ✓
+          4. sağa_dön → yön=down ✓
+          5. ilerle → (4,3) world[3][4]=2 ✓
+          6. parçala → bakılan hücre (4,4) world[4][4]=7 ✓
+          7. ilerle → (4,4) kırılmış kaya 8 olarak izlenir ✓
+          8. sola_dön → yön=right ✓
+          9. ilerle → (5,4) world[4][5]=2 ✓
+          10. ilerle → (6,4) world[4][6]=3 ✓
+          11. topla → world[4][6]=3 ✓
+          12. sağa_dön → yön=down ✓
+          13. ilerle → (6,5) world[5][6]=2 ✓
+          14. ilerle → (6,6) world[6][6]=100 ✓ HEDEF
+          Toplam: 7 ilerle + 3 dönüş + 2 topla + 1 parçala = 14 blok = targetedBlockNumber ✓
+          Kristal: 2 = jewelnumber ✓
+    
+          Aşama 5 Doğrulama:
+          Başlangıç: (x,y)=(2,6), yön=right
+          1. ilerle → (3,6) world[6][3]=2 ✓
+          2. ilerle → (4,6) world[6][4]=2 ✓
+          3. ilerle → (5,6) world[6][5]=2 ✓
+          4. sola_dön → yön=up ✓
+          5. ilerle → (5,5) world[5][5]=2 ✓
+          6. ilerle → (5,4) world[4][5]=3 ✓
+          7. topla → world[4][5]=3 ✓
+          8. sağa_dön → yön=right ✓
+          9. ilerle → (6,4) world[4][6]=2 ✓
+          10. parçala → bakılan hücre (7,4) world[4][7]=7 ✓
+          11. ilerle → (7,4) kırılmış kaya 8 olarak izlenir ✓
+          12. sağa_dön → yön=down ✓
+          13. ilerle → (7,5) world[5][7]=2 ✓
+          14. ilerle → (7,6) world[6][7]=3 ✓
+          15. topla → world[6][7]=3 ✓
+          16. ilerle → (7,7) world[7][7]=100 ✓ HEDEF
+          Toplam: 10 ilerle + 3 dönüş + 2 topla + 1 parçala = 16 blok = targetedBlockNumber ✓
+          Kristal: 2 = jewelnumber ✓
+        */
+
+        /* Multi-level initialization */
+        window.levels = levels;
+        window.currentLevelIndex = 0;
+        window.levelConfig = levels[0];
+    </script>
+
+    <script src="js/game/codemino_engine.js"></script>
+</body>
+
+</html>

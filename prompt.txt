@@ -81,6 +81,8 @@ KRİTİK KURALLAR:
   ✦ [1][*] ve [8][*] satırları genellikle 13 (üst/alt kenar duvarı) ile doldurulur.
   ✦ Platformlar (2, 3, 4, 5, 6, 7, 8) birbirine bitişik ve yürünebilir bir yol oluşturmalıdır.
   ✦ Başlangıç (101) ve hedef (100) her zaman platformların üzerindeki yürünebilir yolun parçası olmalıdır.
+  ✦ Çözüm komut dizisindeki HER "ilerle" adımının bastığı hücre mutlaka yürünebilir olmalıdır. Normal yürüyüş hücreleri 2, kristal toplanacak hücreler 3/4/5, kırılmış kaya sonrası hücre 8, hedef hücre 100 olmalıdır.
+  ✦ Çözüm rotasında karakterin üzerine basacağı hiçbir hücre 0, 1, 12, 13, 14 veya kırılmamış 7 olamaz. 7 yalnızca "parçala" komutunun baktığı hücre olarak kullanılabilir; karakter o hücreye ancak parçalandıktan sonra yürüyebilir.
   ✦ Yol dışında kalan iç alanlar 1 (uzay) veya 12/13/14 (duvar süsleri) ile doldurulur.
   ✦ Her aşamada TEK bir 101 ve TEK bir 100 olmalıdır.
 
@@ -122,10 +124,12 @@ Matrisi oluşturduktan sonra, çözüm yolunu ADIM ADIM İZLE ve doğrula:
       - Yön "down" ise  → world[y+1][x] yürünebilir mi?
       - Yön "up" ise    → world[y-1][x] yürünebilir mi?
       Eğer hedef hücre engel (0, 1, 7, 12, 13, 14) ise → HATA! Matrisi düzelt.
+      Bu hücre çözüm rotasının parçasıysa asla dekor/engel bırakma; normal yol için 2 kullan, kristal varsa 3/4/5 kullan, hedefse 100 kullan.
     • "sağa dön" → Yönü saat yönünde çevir (up→right→down→left→up)
     • "sola dön" → Yönü saat tersi çevir (up→left→down→right→up)
     • "topla" → Mevcut hücre kristal (3/4/5) olmalı, değilse → HATA!
     • "parçala" → Baktığı yöndeki hücre kaya (7) olmalı, değilse → HATA!
+      Parçala komutundan hemen sonraki "ilerle" aynı hücreye basacaksa, bu adım kırılmış kaya zemini olarak kabul edilir; matriste bu hücreyi çözüm doğrulamasında 8'e dönmüş gibi izle.
   ADIM 4: Son pozisyonun hedef (100) hücresi olduğunu doğrula
 
 ÖRNEK DOĞRULAMA:
@@ -224,6 +228,7 @@ Her aşamanın description alanı:
   ⛔ ASLA YAPMA:
   ✦ Başlangıç (101) ile hedef (100) arasında yürünemez hücre (duvar/uzay) ile kesilen kopuk yol bırakma.
   ✦ Çözüm yolundaki bir adımın hedef hücresini engel (0, 1, 7, 12, 13, 14) olarak ayarlama.
+  ✦ Çözüm komut dizisinde "ilerle" ile basılacak bir hücreyi yanlışlıkla 1/12/13/14 gibi engel veya dekor olarak bırakma; bu hücre normal yolsa 2 olmalıdır.
   ✦ Karakterin baktığı yönde bir sonraki hücreyi kontrol etmeden matrise engel koyma.
   ✦ Yalnızca görsel olarak "yakın" duran hücreleri bağlantılı varsayma — her adımı matris indeksleriyle doğrula.
   ✦ Virajlarda köşe hücreyi boş bırakarak veya çapraz hizalayarak 1 kare eksik/kopuk yol oluşturma (özellikle Aşama 5 gibi karmaşık yollarda bu hatayı sıkça yapıyorsun, KESİNLİKLE her adımın ardışık komşu hücreye - Manhattan mesafesi = 1 - bastığından emin ol).
@@ -478,6 +483,8 @@ Her aşama için üretimden önce şu kontrolleri yap:
   □ Matristeki 101 konumu playerPosition ile eşleşiyor mu?
   □ Matristeki 100 konumu destinationPosition ile eşleşiyor mu?
   □ Dış sınır satır/sütunları (0. ve 9. satır/sütun) 0 ile dolu mu?
+  □ Çözüm rotasındaki her "ilerle" adımının bastığı hücre yürünebilir mi? Normal yol hücreleri 2 mi, kristalli hücreler 3/4/5 mi, hedef 100 mü, kırılmış kaya sonrası hücre 8 gibi izlenmiş mi?
+  □ Çözüm rotasında yanlışlıkla 0, 1, 12, 13, 14 veya kırılmamış 7 bırakılmış mı? Varsa matrisi düzelt.
   □ allowedBlocks listesinde yalnızca bu konuya ait bloklar var mı?
   □ workspaceBlocks XML geçerli mi? Tırnak işaretleri düzgün kapatılmış mı?
   □ description Türkçe, teşvik edici ve ipuçlu mu?
@@ -492,7 +499,7 @@ Her aşama için üretimden önce şu kontrolleri yap:
 
      Komut        │ pos güncelleme               │ Kontrol
      ─────────────┼──────────────────────────────┼──────────────────────────
-     ilerle       │ yöne göre x veya y değiştir  │ world[yeniY][yeniX] ∈ {2,3,4,5,6,8,100,101}?
+     ilerle       │ yöne göre x veya y değiştir  │ world[yeniY][yeniX] ∈ {2,3,4,5,6,8,100,101}? Engel/dekor ise MATRİS HATALI.
      sağa_dön     │ pos değişmez                 │ yön güncelle (saat yönü)
      sola_dön     │ pos değişmez                 │ yön güncelle (saat tersi)
      topla        │ pos değişmez                 │ world[y][x] ∈ {3,4,5}?

@@ -334,14 +334,18 @@
     const actions = ["Walk", "TurnToRight", "TurnToLeft", "BreakRock", "CollectCrystal", "start"];
     actions.forEach(action => {
       let wrapper = function() {
-        return window[action]();
+        const result = window[action]();
+        window.highlightPause = true;
+        return result;
       };
       interpreter.setProperty(scope, action, interpreter.createNativeFunction(wrapper));
     });
 
     let wrapperHighlight = function(id) {
       window.highlightblockid = id;
-      window.highlightPause = true;
+      if (window.workspace) {
+        window.workspace.highlightBlock(id);
+      }
     };
     interpreter.setProperty(scope, 'highlightBlock', interpreter.createNativeFunction(wrapperHighlight));
 
@@ -359,6 +363,7 @@
   function generateCodeAndLoadIntoInterpreter() {
     Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
     Blockly.JavaScript.addReservedWords('highlightBlock');
+    Blockly.JavaScript.loopCounter = 0;
     let startBlock = window.workspace.getBlocksByType('start')[0];
     if (startBlock && startBlock.getNextBlock()) {
       window.latestCode = Blockly.JavaScript.blockToCode(startBlock.getNextBlock());
@@ -372,6 +377,7 @@
 
   window.StepCode = function() {
     try {
+      if (!window.isCodeRunning) return;
       window.workspace.highlightBlock(window.highlightblockid);
       if (window.myInterpreter) {
         window.highlightPause = false;
@@ -382,12 +388,21 @@
           } catch (err) {
             console.error(err);
             ok = false;
+            if (window.isCodeRunning) {
+              window.Unsuccess();
+            }
           }
-          if (!window.hasMoreCode) return;
-        } while (window.hasMoreCode && !window.highlightPause && ok);
+          if (!window.hasMoreCode) {
+            window.StateControl();
+            return;
+          }
+        } while (window.hasMoreCode && window.isCodeRunning && !window.highlightPause && ok);
       }
     } catch (err) {
       console.error(err);
+      if (window.isCodeRunning) {
+        window.Unsuccess();
+      }
     }
   };
 

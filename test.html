@@ -206,12 +206,12 @@
             /* --- ASAMA 3 --- */
             {
                 title: "Karma - Aşama 3",
-                description: "Mino artık engellerle karşılaşıyor! 🪨<br>Kristalleri <b>topla</b>, kayaya gelince önce <b>parçala</b>, sonra güvenle ilerle. Dönüşlerini dikkatli seç!",
+                description: "Mino artık daha uzun bir rotada ilerliyor! 🧭<br>Kristalleri <b>topla</b>, dönüşlerini dikkatli seç ve portala giden güvenli yolu takip et.",
                 world: [
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
                     [0, 1, 101, 2, 3, 2, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 1, 7, 1, 1, 1, 0],
+                    [0, 1, 1, 1, 1, 2, 1, 1, 1, 0],
                     [0, 1, 1, 1, 1, 2, 1, 1, 1, 0],
                     [0, 1, 1, 1, 1, 4, 2, 100, 1, 0],
                     [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -223,7 +223,7 @@
                 destinationPosition: { x: 7, y: 5 },
                 startDirection: "right",
                 jewelnumber: 3,
-                targetedBlockNumber: 13,
+                targetedBlockNumber: 12,
                 allowedBlocks: ["start", "walk", "turn_right", "turn_left", "collect_jewel", "smash_stone", "for_dongusu"],
                 workspaceBlocks: '<xml xmlns="https://www.w3.org/1999/xhtml"></xml>'
             },
@@ -308,15 +308,14 @@
         3. topla → (4,2) world[2][4]=3 ✓
         4. ilerle → (5,2) world[2][5]=2 ✓
         5. sağa_dön → yön=down ✓
-        6. parçala → bakılan hücre (5,3) world[3][5]=7 ✓
-        7. ilerle → (5,3) world[3][5]=7 kırıldıktan sonra yürünebilir ✓
-        8. ilerle → (5,4) world[4][5]=2 ✓
-        9. ilerle → (5,5) world[5][5]=4 ✓
-        10. topla → (5,5) world[5][5]=4 ✓
-        11. sola_dön → yön=right ✓
-        12. ilerle → (6,5) world[5][6]=2 ✓
-        13. ilerle → (7,5) world[5][7]=100 ✓ HEDEF
-        Toplam: 8 ilerle + 2 dönüş + 2 topla + 1 parçala = 13 blok = targetedBlockNumber ✓
+        6. ilerle → (5,3) world[3][5]=2 ✓
+        7. ilerle → (5,4) world[4][5]=2 ✓
+        8. ilerle → (5,5) world[5][5]=4 ✓
+        9. topla → (5,5) world[5][5]=4 ✓
+        10. sola_dön → yön=right ✓
+        11. ilerle → (6,5) world[5][6]=2 ✓
+        12. ilerle → (7,5) world[5][7]=100 ✓ HEDEF
+        Toplam: 8 ilerle + 2 dönüş + 2 topla = 12 blok = targetedBlockNumber ✓
         Kristal: 1 + 2 = 3 = jewelnumber ✓
     
         Aşama 4 Doğrulama:
