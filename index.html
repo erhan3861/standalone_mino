@@ -7,8 +7,14 @@
   <script>
     /* Dinamik Base URL / Path Çözümleyici (<base> tag entegrasyonu) */
     (function() {
-      /* Varsayılan olarak erhan3861/standalone_mino reposunun GitHub Pages adresinden çek */
-      var baseUrl = window.CODEMINO_BASE_URL || (window.parent && window.parent.CODEMINO_BASE_URL) || 'https://erhan3861.github.io/standalone_mino/';
+      var baseUrl = window.CODEMINO_BASE_URL || (window.parent && window.parent.CODEMINO_BASE_URL);
+      if (!baseUrl) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        } else {
+          baseUrl = 'https://erhan3861.github.io/standalone_mino/';
+        }
+      }
       if (baseUrl && !baseUrl.endsWith('/')) {
         baseUrl += '/';
       }

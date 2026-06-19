@@ -285,10 +285,8 @@
       Blockly.JavaScript.loopCounter = (Blockly.JavaScript.loopCounter || 0) + 1;
       var loopVar = 'count_' + Blockly.JavaScript.loopCounter;
       return 'for (var ' + loopVar + ' = 0; ' + loopVar + ' < ' + repeats + '; ' + loopVar + '++) {\n' +
-             '  loopstep();\n' +
              branch +
-             '}\n' +
-             'loopend();\n';
+             '}\n';
     };
   }
 
@@ -348,15 +346,12 @@
     interpreter.setProperty(scope, 'highlightBlock', interpreter.createNativeFunction(wrapperHighlight));
 
     let wrapperLoopStep = function() {
-      setTimeout(() => { window.StepCode(); }, 100);
+      // No-op to prevent running ahead of animations
     };
     interpreter.setProperty(scope, 'loopstep', interpreter.createNativeFunction(wrapperLoopStep));
 
     let wrapperLoopEnd = function() {
-      if (window.hasMoreCode && window.isCodeRunning) {
-        window.AddGameObjects();
-        setTimeout(() => { window.StateControl(); window.StepCode(); }, 100);
-      }
+      // No-op to prevent running ahead of animations
     };
     interpreter.setProperty(scope, 'loopend', interpreter.createNativeFunction(wrapperLoopEnd));
   }
@@ -430,7 +425,6 @@
           window.isCodeRunning = true;
           window.myInterpreter = new Interpreter(window.latestCode, initInterpreterApi);
           window.StepCode();
-          setTimeout(() => { window.StepCode(); }, 500);
         }
       } else {
         window.Unsuccess();
@@ -822,10 +816,6 @@
     let idx = dirs.indexOf(window.player.logicalDirection);
     window.player.logicalDirection = dirs[(idx + 1) % 4];
     window.player.destArray.push({ type: "turn", direction: window.player.logicalDirection });
-    
-    if (window.hasMoreCode && window.isCodeRunning) {
-      setTimeout(() => { window.StateControl(); window.StepCode(); }, 500);
-    }
   };
 
   window.TurnToLeft = function() {
@@ -833,10 +823,6 @@
     let idx = dirs.indexOf(window.player.logicalDirection);
     window.player.logicalDirection = dirs[(idx + 1) % 4];
     window.player.destArray.push({ type: "turn", direction: window.player.logicalDirection });
-
-    if (window.hasMoreCode && window.isCodeRunning) {
-      setTimeout(() => { window.StateControl(); window.StepCode(); }, 500);
-    }
   };
 
   window.BreakRock = function() {
