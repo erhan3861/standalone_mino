@@ -272,8 +272,8 @@ Her aşamanın description alanı:
   ✦ Başlangıç (101) ve hedef (100) konumları playerPosition ve destinationPosition ile birebir eşleşmelidir.
   ✦ Yol üzerinde geçilemez bir hücre bırakılmamalıdır (0, 1, 12, 13, 14, kırılmamış 7).
   ✦ for_dongusu bloğu allowedBlocks'a eklenmediyse toolbox'ta görünmez.
-  ✦ title alanı "{{KONU_BASLIGI}} - Aşama N" formatında olmalıdır. Örn: "Döngüler - Aşama 3"
-  ✦ {{KONU_BASLIGI}}, normalize edilmiş konu_basligi değeridir; kullanıcının girdiği sayı doğrudan başlığa yazılmaz.
+  ✦ title alanı "__KONU_BASLIGI__ - Aşama N" formatında olmalıdır. Örn: "Döngüler - Aşama 3"
+  ✦ __KONU_BASLIGI__, normalize edilmiş konu_basligi değeridir; kullanıcının girdiği sayı doğrudan başlığa yazılmaz.
 
   ⛔ ASLA YAPMA:
   ✦ Başlangıç (101) ile hedef (100) arasında yürünemez hücre (duvar/uzay) ile kesilen kopuk yol bırakma.
@@ -295,7 +295,7 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>CodeMino - {{KONU_BASLIGI}}</title>
+  <title>CodeMino - __KONU_BASLIGI__</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script>
     /* Dinamik Base URL / Path Çözümleyici (<base> tag entegrasyonu) */
@@ -437,78 +437,78 @@ Aşağıdaki HTML şablonunun aynısını üret. SADECE <script> içindeki `leve
     const levels = [
       /* --- ASAMA 1 --- */
       {
-        title: "{{KONU_BASLIGI}} - Aşama 1",
-        description: "{{ACIKLAMA_1}}",
+        title: "__KONU_BASLIGI__ - Aşama 1",
+        description: "__ACIKLAMA_1__",
         world: [
-          {{MATRIS_1}}
+          __MATRIS_1__
         ],
-        playerPosition: { x: {{P1_X}}, y: {{P1_Y}} },
-        destinationPosition: { x: {{D1_X}}, y: {{D1_Y}} },
-        startDirection: "{{YON_1}}",
-        jewelnumber: {{KRISTAL_1}},
-        targetedBlockNumber: {{HEDEF_BLOK_1}},
-        allowedBlocks: [{{BLOKLAR_1}}],
-        workspaceBlocks: '{{WORKSPACE_XML_1}}'
+        playerPosition: { x: __P1_X__, y: __P1_Y__ },
+        destinationPosition: { x: __D1_X__, y: __D1_Y__ },
+        startDirection: "__YON_1__",
+        jewelnumber: __KRISTAL_1__,
+        targetedBlockNumber: __HEDEF_BLOK_1__,
+        allowedBlocks: [__BLOKLAR_1__],
+        workspaceBlocks: '__WORKSPACE_XML_1__'
       },
       /* --- ASAMA 2 --- */
       {
-        title: "{{KONU_BASLIGI}} - Aşama 2",
-        description: "{{ACIKLAMA_2}}",
+        title: "__KONU_BASLIGI__ - Aşama 2",
+        description: "__ACIKLAMA_2__",
         world: [
-          {{MATRIS_2}}
+          __MATRIS_2__
         ],
-        playerPosition: { x: {{P2_X}}, y: {{P2_Y}} },
-        destinationPosition: { x: {{D2_X}}, y: {{D2_Y}} },
-        startDirection: "{{YON_2}}",
-        jewelnumber: {{KRISTAL_2}},
-        targetedBlockNumber: {{HEDEF_BLOK_2}},
-        allowedBlocks: [{{BLOKLAR_2}}],
-        workspaceBlocks: '{{WORKSPACE_XML_2}}'
+        playerPosition: { x: __P2_X__, y: __P2_Y__ },
+        destinationPosition: { x: __D2_X__, y: __D2_Y__ },
+        startDirection: "__YON_2__",
+        jewelnumber: __KRISTAL_2__,
+        targetedBlockNumber: __HEDEF_BLOK_2__,
+        allowedBlocks: [__BLOKLAR_2__],
+        workspaceBlocks: '__WORKSPACE_XML_2__'
       },
       /* --- ASAMA 3 --- */
       {
-        title: "{{KONU_BASLIGI}} - Aşama 3",
-        description: "{{ACIKLAMA_3}}",
+        title: "__KONU_BASLIGI__ - Aşama 3",
+        description: "__ACIKLAMA_3__",
         world: [
-          {{MATRIS_3}}
+          __MATRIS_3__
         ],
-        playerPosition: { x: {{P3_X}}, y: {{P3_Y}} },
-        destinationPosition: { x: {{D3_X}}, y: {{D3_Y}} },
-        startDirection: "{{YON_3}}",
-        jewelnumber: {{KRISTAL_3}},
-        targetedBlockNumber: {{HEDEF_BLOK_3}},
-        allowedBlocks: [{{BLOKLAR_3}}],
-        workspaceBlocks: '{{WORKSPACE_XML_3}}'
+        playerPosition: { x: __P3_X__, y: __P3_Y__ },
+        destinationPosition: { x: __D3_X__, y: __D3_Y__ },
+        startDirection: "__YON_3__",
+        jewelnumber: __KRISTAL_3__,
+        targetedBlockNumber: __HEDEF_BLOK_3__,
+        allowedBlocks: [__BLOKLAR_3__],
+        workspaceBlocks: '__WORKSPACE_XML_3__'
       },
       /* --- ASAMA 4 --- */
       {
-        title: "{{KONU_BASLIGI}} - Aşama 4",
-        description: "{{ACIKLAMA_4}}",
+        title: "__KONU_BASLIGI__ - Aşama 4",
+        description: "__ACIKLAMA_4__",
         world: [
-          {{MATRIS_4}}
+          __MATRIS_4__
         ],
-        playerPosition: { x: {{P4_X}}, y: {{P4_Y}} },
-        destinationPosition: { x: {{D4_X}}, y: {{D4_Y}} },
-        startDirection: "{{YON_4}}",
-        jewelnumber: {{KRISTAL_4}},
-        targetedBlockNumber: {{HEDEF_BLOK_4}},
-        allowedBlocks: [{{BLOKLAR_4}}],
-        workspaceBlocks: '{{WORKSPACE_XML_4}}'
+        playerPosition: { x: __P4_X__, y: __P4_Y__ },
+        destinationPosition: { x: __D4_X__, y: __D4_Y__ },
+        startDirection: "__YON_4__",
+        jewelnumber: __KRISTAL_4__,
+        targetedBlockNumber: __HEDEF_BLOK_4__,
+        allowedBlocks: [__BLOKLAR_4__],
+        workspaceBlocks: '__WORKSPACE_XML_4__'
       },
       /* --- ASAMA 5 --- */
       {
-        title: "{{KONU_BASLIGI}} - Aşama 5",
-        description: "{{ACIKLAMA_5}}",
+        title: "__KONU_BASLIGI__ - Aşama 5",
+        description: "__ACIKLAMA_5__",
         world: [
-          {{MATRIS_5}}
+          __MATRIS_5__
         ],
-        playerPosition: { x: {{P5_X}}, y: {{P5_Y}} },
-        destinationPosition: { x: {{D5_X}}, y: {{D5_Y}} },
-        startDirection: "{{YON_5}}",
-        jewelnumber: {{KRISTAL_5}},
-        targetedBlockNumber: {{HEDEF_BLOK_5}},
-        allowedBlocks: [{{BLOKLAR_5}}],
-        workspaceBlocks: '{{WORKSPACE_XML_5}}'
+        playerPosition: { x: __P5_X__, y: __P5_Y__ },
+        destinationPosition: { x: __D5_X__, y: __D5_Y__ },
+        startDirection: "__YON_5__",
+        jewelnumber: __KRISTAL_5__,
+        targetedBlockNumber: __HEDEF_BLOK_5__,
+        allowedBlocks: [__BLOKLAR_5__],
+        workspaceBlocks: '__WORKSPACE_XML_5__'
       }
     ];
 
@@ -577,7 +577,15 @@ Her aşama için üretimden önce şu kontrolleri yap:
 ÇIKTI FORMATI
 ═══════════════════════════════════════════════════
 
-TEK bir HTML dosyası üret. Dosya adı normalize edilmiş değerlerle şu formatta olmalıdır: {{KONU_ANAHTARI}}_{{SEVIYE_ANAHTARI}}.html
+TEK bir HTML dosyası üret. Dosya adı normalize edilmiş değerlerle oluşturulmalıdır:
+  konu_anahtari + "_" + seviye_anahtari + ".html"
+
+Dosya adında Türkçe karakter kullanma. Örneğin döngü konusu için dosya anahtarı dongu olmalıdır.
+
+Örnek dosya adları:
+  hareket_kolay.html
+  dongu_orta.html
+  hata_ayiklama_zor.html
 
 Çıktında sadece tamamlanmış HTML kodunu ver:
 
@@ -592,3 +600,4 @@ TEK bir HTML dosyası üret. Dosya adı normalize edilmiş değerlerle şu forma
 
 Not:
   • Nihai targetedBlockNumber değerlerini ve rota uzunluklarını konu + seviye tablosuna göre belirle.
+
