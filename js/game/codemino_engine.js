@@ -270,7 +270,12 @@
     Blockly.Blocks['for_dongusu'] = {
       init: function() {
         this.appendDummyInput()
-          .appendField(new Blockly.FieldDropdown([["1","1"], ["2","2"], ["3","3"], ["4","4"], ["5","5"]]), "TIMES")
+          .appendField(new Blockly.FieldDropdown(
+            Array.from({ length: 20 }, (_, i) => {
+              const value = String(i + 1);
+              return [value, value];
+            })
+          ), "TIMES")
           .appendField(FOR_COMMAND)
           .appendField(new Blockly.FieldImage(getAssetUrl("images/arrows.png"), 28, 28, "loop"));
         this.appendStatementInput("DO").setCheck(null).appendField("");
